@@ -12,7 +12,6 @@ import {
   LS_TOOL_NAME,
   READ_FILE_TOOL_NAME,
 } from '../tools/tool-names.js';
-import { DEFAULT_GEMINI_MODEL } from '../config/models.js';
 import { makeFakeConfig } from '../test-utils/config.js';
 
 describe('CodebaseInvestigatorAgent', () => {
@@ -44,7 +43,15 @@ describe('CodebaseInvestigatorAgent', () => {
     expect(inputSchema.properties['objective']).toBeDefined();
     expect(inputSchema.required).toContain('objective');
     expect(agent.outputConfig?.outputName).toBe('report');
-    expect(agent.modelConfig?.model).toBe(DEFAULT_GEMINI_MODEL);
+    expect(agent.modelConfig?.model).toBe('small');
+    expect(
+      (
+        agent.modelConfig?.generateContentConfig as unknown as Record<
+          string,
+          unknown
+        >
+      )?.['reasoningEffort'],
+    ).toBe('high');
     expect(agent.toolConfig?.tools).toEqual([
       LS_TOOL_NAME,
       READ_FILE_TOOL_NAME,

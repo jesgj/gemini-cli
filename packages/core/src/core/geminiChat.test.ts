@@ -40,7 +40,8 @@ import {
 import { MockTool } from '../test-utils/mock-tool.js';
 import type { Config } from '../config/config.js';
 import { setSimulate429 } from '../utils/testUtils.js';
-import { DEFAULT_THINKING_MODE } from '../config/models.js';
+// Harness: reasoning budget placeholder (replaces DEFAULT_THINKING_MODE).
+const DEFAULT_THINKING_MODE = 8192;
 import { AuthType } from './contentGenerator.js';
 import { TerminalQuotaError } from '../utils/googleQuotaErrors.js';
 import { type RetryOptions } from '../utils/retry.js';

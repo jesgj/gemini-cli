@@ -16,14 +16,12 @@ import {
 import { HttpProxyAgent } from 'http-proxy-agent';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import * as os from 'node:os';
-import { createCodeAssistContentGenerator } from '../code_assist/codeAssist.js';
 import { isCloudShell } from '../ide/detect-ide.js';
 import type { Config } from '../config/config.js';
 import { loadApiKey } from './apiKeyCredentialStorage.js';
 
 import type { UserTierId, GeminiUserTier } from '../code_assist/types.js';
 import { LoggingContentGenerator } from './loggingContentGenerator.js';
-import { InstallationManager } from '../utils/installationManager.js';
 import { FakeContentGenerator } from './fakeContentGenerator.js';
 import { parseCustomHeaders } from '../utils/customHeaderUtils.js';
 import { determineSurface } from '../utils/surface.js';
@@ -32,6 +30,9 @@ import { getVersion, resolveModel } from '../../index.js';
 import type { LlmRole } from '../telemetry/llmRole.js';
 import { ModelMappingContentGenerator } from './modelMappingContentGenerator.js';
 import { getBackendModelMappings } from '../config/models.js';
+import { loadProviders } from '../providers/registry.js';
+import { ProviderContentGenerator } from '../providers/contentGeneratorAdapter.js';
+import { parseModelRef } from '../providers/types.js';
 
 /**
  * Interface abstracting the core functionalities for generating content and counting tokens.
@@ -138,6 +139,41 @@ function validateBaseUrl(baseUrl: string): void {
   }
 }
 
+function createOwnHarnessContentGenerator(gcConfig: Config): ContentGenerator {
+  const harnessBaseURL =
+    process.env['OWN_HARNESS_BASE_URL'] ?? process.env['OPENAI_BASE_URL'];
+  const harnessApiKey =
+    process.env['OWN_HARNESS_API_KEY'] ?? process.env['OPENAI_API_KEY'];
+  const harnessModel =
+    process.env['OWN_HARNESS_MODEL'] ?? gcConfig.getModel?.() ?? '';
+  let providerId = 'own';
+  if (harnessModel?.includes('/')) {
+    try {
+      providerId = parseModelRef(harnessModel).providerID;
+    } catch {
+      // Keep the fallback id; loadProviders validates the ref below.
+    }
+  }
+  const file =
+    harnessBaseURL && harnessBaseURL.length > 0
+      ? {
+          default: harnessModel || undefined,
+          providers: {
+            [providerId]: {
+              baseURL: harnessBaseURL,
+              ...(harnessApiKey ? { apiKey: harnessApiKey } : {}),
+            },
+          },
+        }
+      : { default: harnessModel || undefined };
+  const { providers, defaultModel } = loadProviders(file, process.env);
+  const adapter = new ProviderContentGenerator(
+    providers,
+    defaultModel || harnessModel || undefined,
+  );
+  return new LoggingContentGenerator(adapter, gcConfig);
+}
+
 export async function createContentGeneratorConfig(
   config: Config,
   authType: AuthType | undefined,
@@ -212,6 +248,16 @@ export async function createContentGenerator(
   gcConfig: Config,
   sessionId?: string,
 ): Promise<ContentGenerator> {
+  if (process.env['OWN_HARNESS_PROVIDER'] === '1') {
+    const harness = createOwnHarnessContentGenerator(gcConfig);
+    if (gcConfig.recordResponses) {
+      return new RecordingContentGenerator(
+        harness,
+        gcConfig.recordResponses,
+      );
+    }
+    return harness;
+  }
   const generator = await (async () => {
     if (gcConfig.fakeResponsesNonStrict) {
       const fakeGenerator = await FakeContentGenerator.fromFile(
@@ -291,25 +337,6 @@ export async function createContentGenerator(
       baseHeaders['Authorization'] = `Bearer ${config.apiKey}`;
     }
     if (
-      config.authType === AuthType.LOGIN_WITH_GOOGLE ||
-      config.authType === AuthType.COMPUTE_ADC
-    ) {
-      const httpOptions = { headers: baseHeaders };
-      return new LoggingContentGenerator(
-        new ModelMappingContentGenerator(
-          await createCodeAssistContentGenerator(
-            httpOptions,
-            config.authType,
-            gcConfig,
-            sessionId,
-          ),
-          () => getBackendModelMappings(gcConfig, true),
-        ),
-        gcConfig,
-      );
-    }
-
-    if (
       config.authType === AuthType.USE_GEMINI ||
       config.authType === AuthType.USE_VERTEX_AI ||
       config.authType === AuthType.GATEWAY
@@ -331,14 +358,6 @@ export async function createContentGenerator(
           ...(sharedRequestType
             ? { [VERTEX_AI_SHARED_REQUEST_TYPE_HEADER]: sharedRequestType }
             : {}),
-        };
-      }
-      if (gcConfig?.getUsageStatisticsEnabled()) {
-        const installationManager = new InstallationManager();
-        const installationId = installationManager.getInstallationId();
-        headers = {
-          ...headers,
-          'x-gemini-api-privileged-user-id': `${installationId}`,
         };
       }
       if (config.authType === AuthType.GATEWAY && config.apiKey === '') {

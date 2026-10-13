@@ -20,18 +20,9 @@ import type {
 import { debugLogger } from '../utils/debugLogger.js';
 import { coreEvents, CoreEvent } from '../utils/events.js';
 import type { A2AClientManager } from './a2a-client-manager.js';
-import {
-  DEFAULT_GEMINI_FLASH_LITE_MODEL,
-  DEFAULT_GEMINI_MODEL,
-  DEFAULT_THINKING_MODE,
-  PREVIEW_GEMINI_FLASH_MODEL,
-  PREVIEW_GEMINI_MODEL,
-  PREVIEW_GEMINI_MODEL_AUTO,
-} from '../config/models.js';
 import * as tomlLoader from './agentLoader.js';
 import { SimpleExtensionLoader } from '../utils/extensionLoader.js';
 import type { ToolRegistry } from '../tools/tool-registry.js';
-import { ThinkingLevel } from '@google/genai';
 import type { AcknowledgedAgentsService } from './acknowledgedAgents.js';
 import { PolicyDecision } from '../policy/types.js';
 import { A2AAuthProviderFactory } from './auth-provider/factory.js';
@@ -85,11 +76,8 @@ const MOCK_AGENT_V1: AgentDefinition = {
     generateContentConfig: {
       temperature: 0,
       topP: 1,
-      thinkingConfig: {
-        includeThoughts: true,
-        thinkingBudget: -1,
-      },
-    },
+      reasoningEffort: 'low',
+    } as unknown as Record<string, unknown> as never,
   },
   runConfig: { maxTimeMinutes: 1 },
   promptConfig: { systemPrompt: 'test' },
@@ -147,8 +135,8 @@ describe('AgentRegistry', () => {
       );
     });
 
-    it('should use default model for codebase investigator for non-preview models', async () => {
-      const previewConfig = makeMockedConfig({ model: DEFAULT_GEMINI_MODEL });
+    it('should use harness small model for codebase investigator', async () => {
+      const previewConfig = makeMockedConfig({ model: 'large' });
       const previewRegistry = new TestableAgentRegistry(previewConfig);
 
       await previewRegistry.initialize();
@@ -157,17 +145,19 @@ describe('AgentRegistry', () => {
         'codebase_investigator',
       ) as LocalAgentDefinition;
       expect(investigatorDef).toBeDefined();
-      expect(investigatorDef?.modelConfig.model).toBe(DEFAULT_GEMINI_MODEL);
+      expect(investigatorDef?.modelConfig.model).toBe('small');
       expect(
-        investigatorDef?.modelConfig.generateContentConfig?.thinkingConfig,
-      ).toStrictEqual({
-        includeThoughts: true,
-        thinkingBudget: DEFAULT_THINKING_MODE,
-      });
+        (
+          investigatorDef?.modelConfig.generateContentConfig as unknown as Record<
+            string,
+            unknown
+          >
+        )?.['reasoningEffort'],
+      ).toBe('high');
     });
 
-    it('should use preview flash model for codebase investigator if main model is preview pro', async () => {
-      const previewConfig = makeMockedConfig({ model: PREVIEW_GEMINI_MODEL });
+    it('should use small model for codebase investigator regardless of main model', async () => {
+      const previewConfig = makeMockedConfig({ model: 'large' });
       const previewRegistry = new TestableAgentRegistry(previewConfig);
 
       await previewRegistry.initialize();
@@ -176,20 +166,12 @@ describe('AgentRegistry', () => {
         'codebase_investigator',
       ) as LocalAgentDefinition;
       expect(investigatorDef).toBeDefined();
-      expect(investigatorDef?.modelConfig.model).toBe(
-        PREVIEW_GEMINI_FLASH_MODEL,
-      );
-      expect(
-        investigatorDef?.modelConfig.generateContentConfig?.thinkingConfig,
-      ).toStrictEqual({
-        includeThoughts: true,
-        thinkingLevel: ThinkingLevel.HIGH,
-      });
+      expect(investigatorDef?.modelConfig.model).toBe('small');
     });
 
-    it('should use preview flash model for codebase investigator if main model is preview auto', async () => {
+    it('should use small model for codebase investigator for auto main model', async () => {
       const previewConfig = makeMockedConfig({
-        model: PREVIEW_GEMINI_MODEL_AUTO,
+        model: 'auto',
       });
       const previewRegistry = new TestableAgentRegistry(previewConfig);
 
@@ -199,19 +181,17 @@ describe('AgentRegistry', () => {
         'codebase_investigator',
       ) as LocalAgentDefinition;
       expect(investigatorDef).toBeDefined();
-      expect(investigatorDef?.modelConfig.model).toBe(
-        PREVIEW_GEMINI_FLASH_MODEL,
-      );
+      expect(investigatorDef?.modelConfig.model).toBe('small');
     });
 
     it('should use the model from the investigator settings', async () => {
       const previewConfig = makeMockedConfig({
-        model: PREVIEW_GEMINI_MODEL,
+        model: 'large',
         agents: {
           overrides: {
             codebase_investigator: {
               enabled: true,
-              modelConfig: { model: DEFAULT_GEMINI_FLASH_LITE_MODEL },
+              modelConfig: { model: 'medium' },
             },
           },
         },
@@ -224,9 +204,7 @@ describe('AgentRegistry', () => {
         'codebase_investigator',
       ) as LocalAgentDefinition;
       expect(investigatorDef).toBeDefined();
-      expect(investigatorDef?.modelConfig.model).toBe(
-        DEFAULT_GEMINI_FLASH_LITE_MODEL,
-      );
+      expect(investigatorDef?.modelConfig.model).toBe('medium');
     });
 
     it('should load agents from user and project directories with correct precedence', async () => {
@@ -509,10 +487,7 @@ describe('AgentRegistry', () => {
         generateContentConfig: {
           temperature: autoAgent.modelConfig.generateContentConfig?.temperature,
           topP: autoAgent.modelConfig.generateContentConfig?.topP,
-          thinkingConfig: {
-            includeThoughts: true,
-            thinkingBudget: -1,
-          },
+          reasoningEffort: 'low',
         },
       });
 
@@ -543,10 +518,7 @@ describe('AgentRegistry', () => {
           temperature:
             MOCK_AGENT_V1.modelConfig.generateContentConfig?.temperature,
           topP: MOCK_AGENT_V1.modelConfig.generateContentConfig?.topP,
-          thinkingConfig: {
-            includeThoughts: true,
-            thinkingBudget: -1,
-          },
+          reasoningEffort: 'low',
         },
       });
     });
@@ -1459,17 +1431,15 @@ describe('AgentRegistry', () => {
       expect(resolved.generateContentConfig.topP).toBe(1);
     });
 
-    it('should deep merge generateContentConfig (e.g. thinkingConfig)', async () => {
+    it('should deep merge generateContentConfig (e.g. reasoningEffort)', async () => {
       const config = makeMockedConfig({
         agents: {
           overrides: {
             MockAgent: {
               modelConfig: {
                 generateContentConfig: {
-                  thinkingConfig: {
-                    thinkingBudget: 16384,
-                  },
-                },
+                  reasoningEffort: 'high',
+                } as unknown as Record<string, unknown> as never,
               },
             },
           },
@@ -1483,10 +1453,11 @@ describe('AgentRegistry', () => {
         model: getModelConfigAlias(MOCK_AGENT_V1),
       });
 
-      expect(resolved.generateContentConfig.thinkingConfig).toEqual({
-        includeThoughts: true, // Preserved from default
-        thinkingBudget: 16384, // Overridden
-      });
+      expect(
+        (
+          resolved.generateContentConfig as unknown as Record<string, unknown>
+        )['reasoningEffort'],
+      ).toEqual('high');
     });
 
     it('should preserve lazy getters when applying overrides', async () => {

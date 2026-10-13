@@ -76,7 +76,10 @@ export class GeminiCliSession {
       targetDir: cwd,
       cwd,
       debugMode: options.debug ?? false,
-      model: options.model || PREVIEW_GEMINI_MODEL_AUTO,
+      model:
+        options.model ||
+        process.env['OWN_HARNESS_MODEL'] ||
+        PREVIEW_GEMINI_MODEL_AUTO,
       userMemory: initialMemory,
       // Minimal config
       enableHooks: false,
@@ -112,7 +115,15 @@ export class GeminiCliSession {
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
-    const authType = getAuthTypeFromEnv() || AuthType.COMPUTE_ADC;
+    // Minimal harness: OAuth/ADC auth was removed. Resolve env-key auth
+    // (GEMINI_API_KEY / GOOGLE_API_KEY) or the custom gateway
+    // (OWN_HARNESS_BASE_URL / OPENAI_BASE_URL); never fall back to
+    // COMPUTE_ADC (metadata server).
+    const authType =
+      getAuthTypeFromEnv() ||
+      (process.env['OWN_HARNESS_BASE_URL'] || process.env['OPENAI_BASE_URL']
+        ? AuthType.GATEWAY
+        : AuthType.USE_GEMINI);
 
     await this.config.refreshAuth(authType);
     await this.config.initialize();

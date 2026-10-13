@@ -15,7 +15,6 @@ import {
   READ_FILE_TOOL_NAME,
   WRITE_FILE_TOOL_NAME,
 } from '../tools/tool-names.js';
-import { PREVIEW_GEMINI_FLASH_MODEL } from '../config/models.js';
 
 const SkillExtractionSchema = z.object({
   response: z
@@ -411,7 +410,10 @@ export const SkillExtractionAgent = (
     schema: SkillExtractionSchema,
   },
   modelConfig: {
-    model: PREVIEW_GEMINI_FLASH_MODEL,
+    model: 'small',
+    generateContentConfig: {
+      reasoningEffort: 'low',
+    } as unknown as Record<string, unknown> as never,
   },
   memoryInboxAccess: true,
   autoMemoryExtractionWriteAccess: true,

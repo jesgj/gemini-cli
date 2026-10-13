@@ -17,7 +17,8 @@ import {
   RetryableQuotaError,
   ValidationRequiredError,
 } from './googleQuotaErrors.js';
-import { PREVIEW_GEMINI_MODEL } from '../config/models.js';
+// Harness: large tier replaces preview Gemini model.
+const PREVIEW_GEMINI_MODEL = 'large';
 import type { ModelPolicy } from '../availability/modelPolicy.js';
 import { createAvailabilityServiceMock } from '../availability/testUtils.js';
 import type { ModelAvailabilityService } from '../availability/modelAvailabilityService.js';

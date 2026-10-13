@@ -24,7 +24,6 @@ import { A2AAuthProviderFactory } from './auth-provider/factory.js';
 import type { AuthenticationHandler } from '@a2a-js/sdk/client';
 import { type z } from 'zod';
 import { debugLogger } from '../utils/debugLogger.js';
-import { isAutoModel } from '../config/models.js';
 import {
   type ModelConfig,
   ModelConfigService,
@@ -42,6 +41,10 @@ export function getModelConfigAlias<TOutput extends z.ZodTypeAny>(
 }
 
 export const DYNAMIC_RULE_SOURCE = 'AgentRegistry (Dynamic)';
+
+function isAutoModel(model: string | undefined): boolean {
+  return model === 'auto';
+}
 
 /**
  * Manages the discovery, loading, validation, and registration of

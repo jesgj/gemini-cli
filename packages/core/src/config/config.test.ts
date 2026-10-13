@@ -63,16 +63,15 @@ import { ACTIVATE_SKILL_TOOL_NAME } from '../tools/tool-names.js';
 import type { SkillDefinition } from '../skills/skillLoader.js';
 import type { McpClientManager } from '../tools/mcp-client-manager.js';
 import { DEFAULT_MODEL_CONFIGS } from './defaultModelConfigs.js';
-import {
-  DEFAULT_GEMINI_MODEL,
-  PREVIEW_GEMINI_3_1_MODEL,
-  DEFAULT_GEMINI_MODEL_AUTO,
-  PREVIEW_GEMINI_MODEL_AUTO,
-  PREVIEW_GEMINI_FLASH_MODEL,
-  DEFAULT_GEMINI_FLASH_MODEL,
-  DEFAULT_GEMINI_FLASH_LITE_MODEL,
-  resetModelsForTesting,
-} from './models.js';
+// Harness tiers replace Gemini model constants (minimal churn).
+const DEFAULT_GEMINI_MODEL = 'large';
+const PREVIEW_GEMINI_3_1_MODEL = 'large';
+const DEFAULT_GEMINI_MODEL_AUTO = 'auto';
+const PREVIEW_GEMINI_MODEL_AUTO = 'auto';
+const PREVIEW_GEMINI_FLASH_MODEL = 'small';
+const DEFAULT_GEMINI_FLASH_MODEL = 'small';
+const DEFAULT_GEMINI_FLASH_LITE_MODEL = 'small';
+function resetModelsForTesting(): void {}
 import { Storage } from './storage.js';
 import type { AgentLoopContext } from './agent-loop-context.js';
 import {
@@ -260,9 +259,10 @@ vi.mock('../context/memoryContextManager.js', () => ({
 
 import { BaseLlmClient } from '../core/baseLlmClient.js';
 import { tokenLimit } from '../core/tokenLimits.js';
-import { getCodeAssistServer } from '../code_assist/codeAssist.js';
+// Harness stub for removed Code Assist server (test-local).
+const getCodeAssistServer: (...args: any[]) => any = vi.fn(() => undefined);
+type CodeAssistServer = any;
 import { getExperiments } from '../code_assist/experiments/experiments.js';
-import type { CodeAssistServer } from '../code_assist/server.js';
 import { MemoryContextManager } from '../context/memoryContextManager.js';
 import { UserTierId } from '../code_assist/types.js';
 import type {
@@ -276,7 +276,6 @@ vi.mock('../core/localLiteRtLmClient.js');
 vi.mock('../core/tokenLimits.js', () => ({
   tokenLimit: vi.fn(),
 }));
-vi.mock('../code_assist/codeAssist.js');
 vi.mock('../code_assist/experiments/experiments.js');
 
 afterEach(() => {

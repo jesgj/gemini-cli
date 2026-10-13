@@ -9,7 +9,8 @@ import { OverrideStrategy } from './overrideStrategy.js';
 import type { RoutingContext } from '../routingStrategy.js';
 import type { BaseLlmClient } from '../../core/baseLlmClient.js';
 import type { Config } from '../../config/config.js';
-import { DEFAULT_GEMINI_MODEL_AUTO } from '../../config/models.js';
+// Harness stubs for removed Gemini-specific model helpers (test-local, minimal churn).
+const DEFAULT_GEMINI_MODEL_AUTO = 'auto';
 import type { LocalLiteRtLmClient } from '../../core/localLiteRtLmClient.js';
 
 describe('OverrideStrategy', () => {

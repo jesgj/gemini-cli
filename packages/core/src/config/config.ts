@@ -78,22 +78,23 @@ import {
 import { coreEvents, CoreEvent } from '../utils/events.js';
 import { tokenLimit } from '../core/tokenLimits.js';
 import {
-  DEFAULT_GEMINI_EMBEDDING_MODEL,
-  DEFAULT_GEMINI_FLASH_MODEL,
-  DEFAULT_GEMINI_MODEL_AUTO,
-  isAutoModel,
-  isPreviewModel,
-  isGemini2Model,
-  PREVIEW_GEMINI_FLASH_MODEL,
+  DEFAULT_HARNESS_MODEL,
+  DEFAULT_HARNESS_EMBEDDING_MODEL,
   resolveModel,
-  setFlashModels,
-  BASE_GEMINI_FLASH_MODEL,
-  LATEST_GEMINI_FLASH_MODEL,
-  LEGACY_CCPA_FLASH_MODEL,
-  BASE_GEMINI_FLASH_LITE_MODEL,
-  LATEST_GEMINI_FLASH_LITE_MODEL,
-  setFlashLiteModel,
 } from './models.js';
+// Harness stubs for removed Gemini-specific model helpers.
+const DEFAULT_GEMINI_MODEL_AUTO = DEFAULT_HARNESS_MODEL;
+const PREVIEW_GEMINI_FLASH_MODEL = DEFAULT_HARNESS_MODEL;
+const DEFAULT_GEMINI_FLASH_MODEL = DEFAULT_HARNESS_MODEL;
+const LATEST_GEMINI_FLASH_MODEL = DEFAULT_HARNESS_MODEL;
+const BASE_GEMINI_FLASH_MODEL = DEFAULT_HARNESS_MODEL;
+const LATEST_GEMINI_FLASH_LITE_MODEL = DEFAULT_HARNESS_MODEL;
+const BASE_GEMINI_FLASH_LITE_MODEL = DEFAULT_HARNESS_MODEL;
+const isGemini2Model = (_m: string): boolean => false;
+const isPreviewModel = (_m: string, _c?: unknown): boolean => false;
+const isAutoModel = (m: string, _c?: unknown): boolean => m === 'auto';
+const setFlashModels = (_a: string, _b: string): void => {};
+const setFlashLiteModel = (_m: string): void => {};
 import { shouldAttemptBrowserLaunch } from '../utils/browser.js';
 import type { MCPOAuthConfig } from '../mcp/oauth-provider.js';
 import { checkPathTrust } from '../utils/trust.js';
@@ -168,7 +169,6 @@ import type {
   AdminControlsSettings,
 } from '../code_assist/types.js';
 import type { HierarchicalMemory } from './memory.js';
-import { getCodeAssistServer } from '../code_assist/codeAssist.js';
 import {
   getExperiments,
   type Experiments,
@@ -182,7 +182,6 @@ import { ragLogger } from '../utils/ragLogger.js';
 import { SkillManager, type SkillDefinition } from '../skills/skillManager.js';
 import { startupProfiler } from '../telemetry/startupProfiler.js';
 import type { AgentDefinition } from '../agents/types.js';
-import { fetchAdminControls } from '../code_assist/admin/admin_controls.js';
 import { isSubpath, resolveToRealPath } from '../utils/paths.js';
 import { validatePath } from '../utils/path-validator.js';
 import { InjectionService } from './injectionService.js';
@@ -1003,7 +1002,7 @@ export class Config implements McpContext, AgentLoopContext {
     this.approvedPlanPath = undefined;
 
     this.embeddingModel =
-      params.embeddingModel ?? DEFAULT_GEMINI_EMBEDDING_MODEL;
+      params.embeddingModel ?? DEFAULT_HARNESS_EMBEDDING_MODEL;
     this.sandbox = params.sandbox
       ? {
           enabled: params.sandbox.enabled || params.toolSandboxing || false,
@@ -1619,12 +1618,11 @@ export class Config implements McpContext, AgentLoopContext {
     // Only assign to instance properties after successful initialization
     this.contentGeneratorConfig = newContentGeneratorConfig;
 
-    const codeAssistServer = getCodeAssistServer(this);
-    const quotaPromise = codeAssistServer?.projectId
-      ? this.refreshUserQuota()
-      : Promise.resolve();
+    // Harness: no Code Assist server. Quota/admin-controls are no-ops;
+    // experiments resolve locally (empty flags without a server).
+    const quotaPromise: Promise<unknown> = Promise.resolve();
 
-    this.experimentsPromise = getExperiments(codeAssistServer)
+    this.experimentsPromise = getExperiments(undefined)
       .then((experiments) => {
         this.setExperiments(experiments);
         return experiments;
@@ -1634,7 +1632,7 @@ export class Config implements McpContext, AgentLoopContext {
         return undefined;
       });
 
-    const [experiments] = await Promise.all([
+    await Promise.all([
       this.experimentsPromise,
       quotaPromise.catch((e) => {
         debugLogger.error('Failed to fetch user quota', e);
@@ -1666,25 +1664,6 @@ export class Config implements McpContext, AgentLoopContext {
       this.setModel(DEFAULT_GEMINI_MODEL_AUTO);
     }
 
-    const adminControlsEnabled =
-      experiments?.flags[ExperimentFlags.ENABLE_ADMIN_CONTROLS]?.boolValue ??
-      false;
-
-    try {
-      const adminControls = await fetchAdminControls(
-        codeAssistServer,
-        this.getRemoteAdminSettings(),
-        adminControlsEnabled,
-        (newSettings: AdminControlsSettings) => {
-          this.setRemoteAdminSettings(newSettings);
-          coreEvents.emitAdminSettingsChanged();
-        },
-      );
-      this.setRemoteAdminSettings(adminControls);
-    } catch (e) {
-      debugLogger.error('Failed to fetch admin controls', e);
-    }
-
     if ((await this.getProModelNoAccess()) && isAutoModel(this.model)) {
       this.setModel(PREVIEW_GEMINI_FLASH_MODEL);
     }
@@ -1694,8 +1673,7 @@ export class Config implements McpContext, AgentLoopContext {
     if (this.experiments) {
       return this.experiments;
     }
-    const codeAssistServer = getCodeAssistServer(this);
-    return getExperiments(codeAssistServer);
+    return getExperiments(undefined);
   }
 
   getUserTier(): UserTierId | undefined {
@@ -2300,95 +2278,13 @@ export class Config implements McpContext, AgentLoopContext {
   }
 
   async refreshAvailableCredits(): Promise<void> {
-    const codeAssistServer = getCodeAssistServer(this);
-    if (!codeAssistServer) {
-      return;
-    }
-    try {
-      await codeAssistServer.refreshAvailableCredits();
-    } catch {
-      // Non-fatal: proceed even if refresh fails.
-      // The actual credit balance will be verified server-side.
-    }
+    // Harness: no Code Assist server; credits refresh is a no-op.
+    return;
   }
 
   async refreshUserQuota(): Promise<RetrieveUserQuotaResponse | undefined> {
-    const codeAssistServer = getCodeAssistServer(this);
-    if (!codeAssistServer || !codeAssistServer.projectId) {
-      return undefined;
-    }
-    try {
-      const quota = await codeAssistServer.retrieveUserQuota({
-        project: codeAssistServer.projectId,
-      });
-
-      if (quota.buckets) {
-        this.lastRetrievedQuota = quota;
-        this.lastQuotaFetchTime = Date.now();
-
-        for (const bucket of quota.buckets) {
-          if (!bucket.modelId || bucket.remainingFraction == null) {
-            continue;
-          }
-
-          let modelId = bucket.modelId;
-          if (
-            modelId === LEGACY_CCPA_FLASH_MODEL ||
-            modelId === BASE_GEMINI_FLASH_MODEL ||
-            modelId === LATEST_GEMINI_FLASH_MODEL
-          ) {
-            modelId = this.hasLatestFlashGAAccess()
-              ? LATEST_GEMINI_FLASH_MODEL
-              : BASE_GEMINI_FLASH_MODEL;
-          } else if (
-            modelId === BASE_GEMINI_FLASH_LITE_MODEL ||
-            modelId === LATEST_GEMINI_FLASH_LITE_MODEL
-          ) {
-            modelId = this.hasLatestFlashLiteGAAccess()
-              ? LATEST_GEMINI_FLASH_LITE_MODEL
-              : BASE_GEMINI_FLASH_LITE_MODEL;
-          }
-
-          let remaining: number;
-          let limit: number;
-
-          if (bucket.remainingAmount) {
-            remaining = parseInt(bucket.remainingAmount, 10);
-            limit =
-              bucket.remainingFraction > 0
-                ? Math.round(remaining / bucket.remainingFraction)
-                : (this.modelQuotas.get(modelId)?.limit ?? 0);
-          } else {
-            // Server only sent remainingFraction — use a normalized scale.
-            limit = 100;
-            remaining = Math.round(bucket.remainingFraction * limit);
-          }
-
-          if (!isNaN(remaining) && Number.isFinite(limit) && limit > 0) {
-            this.modelQuotas.set(modelId, {
-              remaining,
-              limit,
-              resetTime: bucket.resetTime,
-            });
-          }
-        }
-      }
-
-      const hasAccess =
-        quota.buckets?.some(
-          (b) => b.modelId && isPreviewModel(b.modelId, this),
-        ) ?? false;
-      this.setHasAccessToPreviewModel(hasAccess);
-
-      if (quota.buckets) {
-        this.emitQuotaChangedEvent();
-      }
-
-      return quota;
-    } catch (e) {
-      debugLogger.debug('Failed to retrieve user quota', e);
-      return undefined;
-    }
+    // Harness: no Code Assist server; quota is unavailable.
+    return undefined;
   }
 
   async refreshUserQuotaIfStale(
@@ -4252,4 +4148,4 @@ export class Config implements McpContext, AgentLoopContext {
   }
 }
 // Export model constants for use in CLI
-export { DEFAULT_GEMINI_FLASH_MODEL };
+export { DEFAULT_HARNESS_MODEL };

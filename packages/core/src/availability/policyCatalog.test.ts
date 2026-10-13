@@ -11,15 +11,15 @@ import {
   getFlashLitePolicyChain,
   validateModelPolicyChain,
 } from './policyCatalog.js';
-import {
-  DEFAULT_GEMINI_MODEL,
-  PREVIEW_GEMINI_3_1_CUSTOM_TOOLS_MODEL,
-  PREVIEW_GEMINI_3_1_MODEL,
-  PREVIEW_GEMINI_MODEL,
-  setFlashLiteModel,
-  resetModelsForTesting,
-  LATEST_GEMINI_FLASH_LITE_MODEL,
-} from '../config/models.js';
+import { DEFAULT_HARNESS_MODEL } from '../config/models.js';
+// Harness stubs for removed Gemini-specific model helpers (test-local, minimal churn).
+const DEFAULT_GEMINI_MODEL = DEFAULT_HARNESS_MODEL;
+const PREVIEW_GEMINI_3_1_CUSTOM_TOOLS_MODEL = DEFAULT_HARNESS_MODEL;
+const PREVIEW_GEMINI_3_1_MODEL = DEFAULT_HARNESS_MODEL;
+const PREVIEW_GEMINI_MODEL = DEFAULT_HARNESS_MODEL;
+function setFlashLiteModel(..._args: unknown[]): void {}
+function resetModelsForTesting(): void {}
+const LATEST_GEMINI_FLASH_LITE_MODEL = 'local-small-coder';
 
 describe('policyCatalog', () => {
   afterEach(() => {

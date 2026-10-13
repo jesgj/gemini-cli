@@ -28,7 +28,12 @@ import {
   GREP_TOOL_NAME,
   AGENT_TOOL_NAME,
 } from '../tools/tool-names.js';
-import { resolveModel, supportsModernFeatures } from '../config/models.js';
+import { resolveModel } from '../config/models.js';
+
+// Harness: all models use modern snippets.
+function supportsModernFeatures(..._args: unknown[]): boolean {
+  return true;
+}
 import { DiscoveredMCPTool } from '../tools/mcp-tool.js';
 import {
   getAllGeminiMdFilenames,

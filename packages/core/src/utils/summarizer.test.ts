@@ -25,8 +25,10 @@ import type {
   ModelConfigService,
   ResolvedModelConfig,
 } from '../services/modelConfigService.js';
-import { DEFAULT_GEMINI_MODEL } from '../config/models.js';
 import { debugLogger } from './debugLogger.js';
+
+// Harness: large tier replaces default Gemini model.
+const DEFAULT_GEMINI_MODEL = 'large';
 
 // Mock GeminiClient and Config constructor
 vi.mock('../core/client.js');

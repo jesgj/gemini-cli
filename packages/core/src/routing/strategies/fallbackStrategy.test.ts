@@ -11,11 +11,11 @@ import type { BaseLlmClient } from '../../core/baseLlmClient.js';
 import type { Config } from '../../config/config.js';
 import type { ModelAvailabilityService } from '../../availability/modelAvailabilityService.js';
 import type { LocalLiteRtLmClient } from '../../core/localLiteRtLmClient.js';
-import {
-  DEFAULT_GEMINI_MODEL,
-  DEFAULT_GEMINI_FLASH_MODEL,
-  DEFAULT_GEMINI_MODEL_AUTO,
-} from '../../config/models.js';
+import { DEFAULT_HARNESS_MODEL } from '../../config/models.js';
+// Harness stubs for removed Gemini-specific model helpers (test-local, minimal churn).
+const DEFAULT_GEMINI_MODEL = DEFAULT_HARNESS_MODEL;
+const DEFAULT_GEMINI_FLASH_MODEL = 'local-small-coder';
+const DEFAULT_GEMINI_MODEL_AUTO = 'auto';
 import { selectModelForAvailability } from '../../availability/policyHelpers.js';
 
 vi.mock('../../availability/policyHelpers.js', () => ({

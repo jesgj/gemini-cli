@@ -11,15 +11,8 @@ import {
   LS_TOOL_NAME,
   READ_FILE_TOOL_NAME,
 } from '../tools/tool-names.js';
-import {
-  DEFAULT_THINKING_MODE,
-  DEFAULT_GEMINI_MODEL,
-  PREVIEW_GEMINI_FLASH_MODEL,
-  supportsModernFeatures,
-} from '../config/models.js';
 import { z } from 'zod';
 import type { Config } from '../config/config.js';
-import { ThinkingLevel } from '@google/genai';
 
 // Define a type that matches the outputConfig schema for type safety.
 const CodebaseInvestigationReportSchema = z.object({
@@ -49,13 +42,10 @@ const CodebaseInvestigationReportSchema = z.object({
  * dependencies, and technologies.
  */
 export const CodebaseInvestigatorAgent = (
-  config: Config,
+  _config: Config,
 ): LocalAgentDefinition<typeof CodebaseInvestigationReportSchema> => {
-  // Use Preview Flash model if the main model supports modern features.
-  // If the main model is not a modern model, use the default pro model.
-  const model = supportsModernFeatures(config.getModel())
-    ? PREVIEW_GEMINI_FLASH_MODEL
-    : DEFAULT_GEMINI_MODEL;
+  // Harness: fast small model with high reasoning effort.
+  const model = 'small';
 
   const listCommand =
     process.platform === 'win32'
@@ -97,16 +87,8 @@ export const CodebaseInvestigatorAgent = (
       generateContentConfig: {
         temperature: 0.1,
         topP: 0.95,
-        thinkingConfig: supportsModernFeatures(model)
-          ? {
-              includeThoughts: true,
-              thinkingLevel: ThinkingLevel.HIGH,
-            }
-          : {
-              includeThoughts: true,
-              thinkingBudget: DEFAULT_THINKING_MODE,
-            },
-      },
+        reasoningEffort: 'high',
+      } as unknown as Record<string, unknown> as never,
     },
 
     runConfig: {

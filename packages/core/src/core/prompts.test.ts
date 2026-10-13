@@ -17,14 +17,13 @@ import { CodebaseInvestigatorAgent } from '../agents/codebase-investigator.js';
 import { AGENT_TOOL_NAME } from '../tools/tool-names.js';
 import { GEMINI_DIR } from '../utils/paths.js';
 import { debugLogger } from '../utils/debugLogger.js';
-import {
-  PREVIEW_GEMINI_MODEL,
-  PREVIEW_GEMINI_FLASH_MODEL,
-  DEFAULT_GEMINI_MODEL_AUTO,
-  DEFAULT_GEMINI_MODEL,
-} from '../config/models.js';
 import { ApprovalMode } from '../policy/types.js';
 import { DiscoveredMCPTool } from '../tools/mcp-tool.js';
+// Harness tiers replace Gemini model constants.
+const PREVIEW_GEMINI_MODEL = 'large';
+const PREVIEW_GEMINI_FLASH_MODEL = 'small';
+const DEFAULT_GEMINI_MODEL_AUTO = 'auto';
+const DEFAULT_GEMINI_MODEL = 'large';
 import type { AnyDeclarativeTool } from '../tools/tools.js';
 import type { CallableTool } from '@google/genai';
 import type { MessageBus } from '../confirmation-bus/message-bus.js';

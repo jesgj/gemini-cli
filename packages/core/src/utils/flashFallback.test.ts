@@ -13,7 +13,8 @@ import {
   shouldSimulate429,
   resetRequestCounter,
 } from './testUtils.js';
-import { DEFAULT_GEMINI_FLASH_MODEL } from '../config/models.js';
+// Harness: small tier replaces default flash model.
+const DEFAULT_GEMINI_FLASH_MODEL = 'small';
 import { retryWithBackoff } from './retry.js';
 import { AuthType } from '../core/contentGenerator.js';
 // Import the new types (Assuming this test file is in packages/core/src/utils/)

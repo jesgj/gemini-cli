@@ -7,7 +7,6 @@
 import { describe, it, expect } from 'vitest';
 import { CliHelpAgent } from './cli-help-agent.js';
 import { GET_INTERNAL_DOCS_TOOL_NAME } from '../tools/tool-names.js';
-import { GEMINI_MODEL_ALIAS_FLASH } from '../config/models.js';
 import type { LocalAgentDefinition } from './types.js';
 import type { Config } from '../config/config.js';
 
@@ -36,7 +35,7 @@ describe('CliHelpAgent', () => {
   });
 
   it('should use the correct model and tools', () => {
-    expect(localAgent.modelConfig?.model).toBe(GEMINI_MODEL_ALIAS_FLASH);
+    expect(localAgent.modelConfig?.model).toBe('small');
 
     const tools = localAgent.toolConfig?.tools || [];
     const hasInternalDocsTool = tools.some(

@@ -12,12 +12,8 @@ WORKDIR /build
 COPY package*.json ./
 COPY packages/cli/package*.json ./packages/cli/
 COPY packages/core/package*.json ./packages/core/
-COPY packages/vscode-ide-companion/package*.json ./packages/vscode-ide-companion/
-COPY packages/vscode-ide-companion/scripts/ ./packages/vscode-ide-companion/scripts/
-COPY packages/devtools/package*.json ./packages/devtools/
 COPY packages/sdk/package*.json ./packages/sdk/
 COPY packages/test-utils/package*.json ./packages/test-utils/
-COPY packages/a2a-server/package*.json ./packages/a2a-server/
 
 # Use npm ci for consistent, reliable builds (respects package-lock.json)
 RUN HUSKY=0 npm ci --ignore-scripts

@@ -15,7 +15,8 @@ import {
 } from '../index.js';
 import { createMockMessageBus } from '../test-utils/mock-message-bus.js';
 import { MockTool } from '../test-utils/mock-tool.js';
-import { DEFAULT_GEMINI_MODEL } from '../config/models.js';
+// Harness: large tier replaces default Gemini model.
+const DEFAULT_GEMINI_MODEL = 'large';
 import type { PolicyEngine } from '../policy/policy-engine.js';
 import { HookSystem } from '../hooks/hookSystem.js';
 import { HookType, HookEventName } from '../hooks/types.js';

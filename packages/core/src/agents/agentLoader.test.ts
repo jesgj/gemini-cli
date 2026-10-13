@@ -14,7 +14,9 @@ import {
   loadAgentsFromDirectory,
   AgentLoadError,
 } from './agentLoader.js';
-import { GEMINI_MODEL_ALIAS_PRO } from '../config/models.js';
+import { DEFAULT_HARNESS_MODEL } from '../config/models.js';
+// Harness stubs for removed Gemini-specific model helpers (test-local, minimal churn).
+const GEMINI_MODEL_ALIAS_PRO = DEFAULT_HARNESS_MODEL;
 import {
   DEFAULT_MAX_TIME_MINUTES,
   DEFAULT_MAX_TURNS,

@@ -24,10 +24,10 @@ import {
   type CitationMetadata,
   type PartListUnion,
 } from '@google/genai';
-import {
-  DEFAULT_GEMINI_MODEL,
-  PREVIEW_GEMINI_MODEL,
-} from '../config/models.js';
+import { DEFAULT_HARNESS_MODEL } from '../config/models.js';
+// Harness stubs for removed Gemini-specific model helpers (test-local, minimal churn).
+const DEFAULT_GEMINI_MODEL = DEFAULT_HARNESS_MODEL;
+const PREVIEW_GEMINI_MODEL = DEFAULT_HARNESS_MODEL;
 
 const mockTextPart = (text: string): Part => ({ text });
 const mockFunctionCallPart = (

@@ -11,11 +11,15 @@ import type {
   PartListUnion,
 } from '@google/genai';
 import { getResponseText } from './partUtils.js';
-import { supportsMultimodalFunctionResponse } from '../config/models.js';
 import { debugLogger } from './debugLogger.js';
 import type { Config } from '../config/config.js';
 
 export const BINARY_INJECTION_KEY = '__binary_injection__';
+
+// Harness: no multimodal function-response support; keep shape.
+function supportsMultimodalFunctionResponse(..._args: unknown[]): boolean {
+  return false;
+}
 
 /**
  * Formats tool output for a Gemini FunctionResponse.

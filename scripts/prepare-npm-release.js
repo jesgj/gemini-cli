@@ -35,10 +35,9 @@ if (fs.existsSync(sourceBundleDir)) {
   process.exit(1);
 }
 
-// Inherit optionalDependencies from root package.json, excluding dev-only packages.
+// Inherit optionalDependencies from root package.json.
 const rootPkg = readJson('package.json');
 const optionalDependencies = { ...(rootPkg.optionalDependencies || {}) };
-delete optionalDependencies['gemini-cli-devtools'];
 
 // Update @google/gemini-cli package.json for bundled npm release
 const cliPkgPath = 'packages/cli/package.json';

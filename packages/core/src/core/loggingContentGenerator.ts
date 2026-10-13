@@ -32,8 +32,7 @@ import {
   logApiResponse,
 } from '../telemetry/loggers.js';
 import type { ContentGenerator } from './contentGenerator.js';
-import { CodeAssistServer } from '../code_assist/server.js';
-import { toContents } from '../code_assist/converter.js';
+import { toContents } from './contentConverterShim.js';
 import { isStructuredError } from '../utils/quotaErrorDetection.js';
 import { runInDevTraceSpan, type SpanMetadata } from '../telemetry/trace.js';
 import { debugLogger } from '../utils/debugLogger.js';
@@ -194,21 +193,9 @@ export class LoggingContentGenerator implements ContentGenerator {
   }
 
   private _getEndpointUrl(
-    req: GenerateContentParameters,
-    method: 'generateContent' | 'generateContentStream',
+    _req: GenerateContentParameters,
+    _method: 'generateContent' | 'generateContentStream',
   ): ServerDetails {
-    // Case 1: Authenticated with a Google account (`gcloud auth login`).
-    // Requests are routed through the internal CodeAssistServer.
-    if (this.wrapped instanceof CodeAssistServer) {
-      const url = new URL(this.wrapped.getMethodUrl(method));
-      const port = url.port
-        ? parseInt(url.port, 10)
-        : url.protocol === 'https:'
-          ? 443
-          : 80;
-      return { address: url.hostname, port };
-    }
-
     const genConfig = this.config.getContentGeneratorConfig();
 
     // Case 2: Using an API key for Vertex AI.

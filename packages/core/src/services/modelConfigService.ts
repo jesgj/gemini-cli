@@ -8,10 +8,19 @@ import type { GenerateContentConfig } from '@google/genai';
 import type { ModelPolicy } from '../availability/modelPolicy.js';
 import {
   getDisplayString,
-  PREVIEW_GEMINI_3_1_MODEL,
-  isProModel,
-  getAutoModelDescription,
+  DEFAULT_HARNESS_MODEL,
 } from '../config/models.js';
+
+// Harness equivalents: no pro/preview tiers. Keep shapes for call-site compat.
+const PREVIEW_GEMINI_3_1_MODEL = 'local-small-coder';
+function isProModel(_id: string): boolean {
+  return false;
+}
+function getAutoModelDescription(
+  ..._args: unknown[]
+): string {
+  return `Let harness decide the best model: ${DEFAULT_HARNESS_MODEL}`;
+}
 
 // The primary key for the ModelConfig is the model string. However, we also
 // support a secondary key to limit the override scope, typically an agent name.
@@ -233,16 +242,12 @@ export class ModelConfigService {
       return definition;
     }
 
-    // For unknown models, return an implicit custom definition to match legacy behavior.
-    if (!modelId.startsWith('gemini-')) {
-      return {
-        tier: 'custom',
-        family: 'custom',
-        features: {},
-      };
-    }
-
-    return undefined;
+    // Harness: all unknown models are treated as custom (no gemini- family).
+    return {
+      tier: 'custom',
+      family: 'custom',
+      features: {},
+    };
   }
 
   getModelDefinitions(): Record<string, ModelDefinition> {

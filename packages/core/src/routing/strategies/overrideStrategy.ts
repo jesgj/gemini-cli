@@ -5,7 +5,7 @@
  */
 
 import type { Config } from '../../config/config.js';
-import { isAutoModel, resolveModel } from '../../config/models.js';
+import { resolveModel } from '../../config/models.js';
 import type { BaseLlmClient } from '../../core/baseLlmClient.js';
 import type {
   RoutingContext,
@@ -13,6 +13,11 @@ import type {
   RoutingStrategy,
 } from '../routingStrategy.js';
 import type { LocalLiteRtLmClient } from '../../core/localLiteRtLmClient.js';
+
+// Harness: auto is literal 'auto' via string check.
+function isAutoModel(model?: string, ..._rest: unknown[]): boolean {
+  return typeof model === 'string' && model.trim() === 'auto';
+}
 
 /**
  * Handles cases where the user explicitly specifies a model (override).

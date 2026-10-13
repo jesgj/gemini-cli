@@ -12,7 +12,7 @@ import type {
   RoutingDecision,
   RoutingStrategy,
 } from '../routingStrategy.js';
-import { resolveClassifierModel, isGemini3Model } from '../../config/models.js';
+import { resolveClassifierModel } from '../../config/models.js';
 import { createUserContent, Type } from '@google/genai';
 import type { Config } from '../../config/config.js';
 import {
@@ -23,6 +23,11 @@ import { debugLogger } from '../../utils/debugLogger.js';
 import { normalizeModelId } from '../../utils/modelUtils.js';
 import type { LocalLiteRtLmClient } from '../../core/localLiteRtLmClient.js';
 import { LlmRole } from '../../telemetry/types.js';
+
+// Harness: no Gemini 3 family; numerical routing disabled (always null).
+function isGemini3Model(..._args: unknown[]): boolean {
+  return false;
+}
 
 // The number of recent history turns to provide to the router for context.
 export const HISTORY_TURNS_FOR_CONTEXT = 8;
