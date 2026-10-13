@@ -21,15 +21,22 @@ import {
   SILENT_ACTIONS,
 } from './policyCatalog.js';
 import {
-  DEFAULT_GEMINI_FLASH_LITE_MODEL,
-  DEFAULT_GEMINI_MODEL,
-  DEFAULT_GEMINI_MODEL_AUTO,
-  PREVIEW_GEMINI_MODEL_AUTO,
-  isAutoModel,
-  isGemini3Model,
+  DEFAULT_HARNESS_MODEL,
   resolveModel,
 } from '../config/models.js';
 import { normalizeModelId } from '../utils/modelUtils.js';
+
+// Harness equivalents: no Gemini tiers; auto is literal 'auto'.
+const DEFAULT_GEMINI_FLASH_LITE_MODEL = 'local-small-coder';
+const DEFAULT_GEMINI_MODEL = DEFAULT_HARNESS_MODEL;
+const DEFAULT_GEMINI_MODEL_AUTO = 'auto';
+const PREVIEW_GEMINI_MODEL_AUTO = 'preview-auto-never';
+function isAutoModel(model?: string, ..._rest: unknown[]): boolean {
+  return typeof model === 'string' && model.trim() === 'auto';
+}
+function isGemini3Model(..._args: unknown[]): boolean {
+  return false;
+}
 import type { ModelSelectionResult } from './modelAvailabilityService.js';
 import type { ModelConfigKey } from '../services/modelConfigService.js';
 import { ApprovalMode } from '../policy/types.js';

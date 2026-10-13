@@ -13,7 +13,7 @@ import type {
   FinishReason,
   FunctionCallingConfig,
 } from '@google/genai';
-import { DEFAULT_GEMINI_FLASH_MODEL } from '../config/models.js';
+import { DEFAULT_HARNESS_MODEL } from '../config/models.js';
 import { getResponseText } from '../utils/partUtils.js';
 
 /**
@@ -208,7 +208,7 @@ export class HookTranslatorGenAIv1 extends HookTranslator {
     const config = extractGenerationConfig(sdkRequest);
 
     return {
-      model: sdkRequest.model || DEFAULT_GEMINI_FLASH_MODEL,
+      model: sdkRequest.model || DEFAULT_HARNESS_MODEL,
       messages,
       config: {
         temperature: config?.temperature,

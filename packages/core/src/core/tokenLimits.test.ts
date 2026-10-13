@@ -6,13 +6,13 @@
 
 import { describe, it, expect } from 'vitest';
 import { tokenLimit, DEFAULT_TOKEN_LIMIT } from './tokenLimits.js';
-import {
-  DEFAULT_GEMINI_FLASH_LITE_MODEL,
-  DEFAULT_GEMINI_FLASH_MODEL,
-  DEFAULT_GEMINI_MODEL,
-  PREVIEW_GEMINI_FLASH_MODEL,
-  PREVIEW_GEMINI_MODEL,
-} from '../config/models.js';
+
+// Harness tiers (small/medium/large) replace Gemini model constants.
+const DEFAULT_GEMINI_MODEL = 'large';
+const DEFAULT_GEMINI_FLASH_MODEL = 'small';
+const DEFAULT_GEMINI_FLASH_LITE_MODEL = 'small';
+const PREVIEW_GEMINI_MODEL = 'large';
+const PREVIEW_GEMINI_FLASH_MODEL = 'small';
 
 describe('tokenLimit', () => {
   it('should return the correct token limit for default models', () => {

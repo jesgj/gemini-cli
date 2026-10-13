@@ -6,7 +6,9 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Config } from './config.js';
-import { DEFAULT_GEMINI_MODEL, DEFAULT_GEMINI_FLASH_MODEL } from './models.js';
+// Harness tiers replace Gemini model constants.
+const DEFAULT_GEMINI_MODEL = 'large';
+const DEFAULT_GEMINI_FLASH_MODEL = 'small';
 import { logFlashFallback } from '../telemetry/loggers.js';
 import { FlashFallbackEvent } from '../telemetry/types.js';
 

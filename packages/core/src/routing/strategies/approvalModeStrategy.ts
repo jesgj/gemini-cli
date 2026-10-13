@@ -5,12 +5,7 @@
  */
 
 import type { Config } from '../../config/config.js';
-import {
-  isAutoModel,
-  resolveClassifierModel,
-  GEMINI_MODEL_ALIAS_FLASH,
-  GEMINI_MODEL_ALIAS_PRO,
-} from '../../config/models.js';
+import { resolveClassifierModel } from '../../config/models.js';
 import type { BaseLlmClient } from '../../core/baseLlmClient.js';
 import { ApprovalMode } from '../../policy/types.js';
 import type {
@@ -18,6 +13,13 @@ import type {
   RoutingDecision,
   RoutingStrategy,
 } from '../routingStrategy.js';
+
+// Harness: auto is literal 'auto'; flash->small, pro->large.
+const GEMINI_MODEL_ALIAS_FLASH = 'small';
+const GEMINI_MODEL_ALIAS_PRO = 'large';
+function isAutoModel(model?: string, ..._rest: unknown[]): boolean {
+  return typeof model === 'string' && model.trim() === 'auto';
+}
 
 /**
  * A strategy that routes based on the current ApprovalMode and plan status.

@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { CodeAssistServer } from '../server.js';
+import type { ExperimentServer as CodeAssistServer } from './experiments.js';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import type { ListExperimentsResponse } from './types.js';
@@ -24,7 +24,6 @@ vi.mock('node:fs', async (importOriginal) => {
   };
 });
 vi.mock('node:os');
-vi.mock('../server.js');
 vi.mock('./client_metadata.js', () => ({
   getClientMetadata: vi.fn(),
 }));

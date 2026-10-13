@@ -12,10 +12,10 @@ import {
   getAllGeminiMdFilenames,
   DEFAULT_CONTEXT_FILENAME,
 } from '../tools/memoryTool.js';
-import {
-  PREVIEW_GEMINI_MODEL,
-  DEFAULT_GEMINI_MODEL,
-} from '../config/models.js';
+import { DEFAULT_HARNESS_MODEL } from '../config/models.js';
+// Harness stubs for removed Gemini-specific model helpers (test-local, minimal churn).
+const PREVIEW_GEMINI_MODEL = DEFAULT_HARNESS_MODEL;
+const DEFAULT_GEMINI_MODEL = DEFAULT_HARNESS_MODEL;
 import { ApprovalMode } from '../policy/types.js';
 import { DiscoveredMCPTool } from '../tools/mcp-tool.js';
 import { MockTool } from '../test-utils/mock-tool.js';

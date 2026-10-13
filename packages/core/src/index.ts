@@ -57,14 +57,6 @@ export * from './routing/modelRouterService.js';
 export * from './fallback/types.js';
 export * from './fallback/handler.js';
 
-export * from './code_assist/codeAssist.js';
-export * from './code_assist/oauth2.js';
-export * from './code_assist/server.js';
-export * from './code_assist/setup.js';
-export * from './code_assist/types.js';
-export * from './code_assist/telemetry.js';
-export * from './code_assist/admin/admin_controls.js';
-export * from './code_assist/admin/mcpUtils.js';
 export * from './core/apiKeyCredentialStorage.js';
 
 // Export utilities
@@ -314,7 +306,6 @@ export * from './utils/trust.js';
 // Export voice utilities
 export * from './voice/audioRecorder.js';
 export * from './voice/transcriptionProvider.js';
-export * from './voice/geminiLiveTranscriptionProvider.js';
 export * from './voice/whisperTranscriptionProvider.js';
 export * from './voice/transcriptionFactory.js';
 export * from './voice/whisperModelManager.js';

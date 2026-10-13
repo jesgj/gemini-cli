@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { CodeAssistServer } from '../server.js';
 import { getClientMetadata } from './client_metadata.js';
 import type { ListExperimentsResponse, Flag } from './types.js';
 import * as fs from 'node:fs';
@@ -15,6 +14,12 @@ export interface Experiments {
   experimentIds: number[];
 }
 
+export interface ExperimentServer {
+  listExperiments(
+    metadata: unknown,
+  ): Promise<ListExperimentsResponse>;
+}
+
 let experimentsPromise: Promise<Experiments> | undefined;
 
 /**
@@ -23,7 +28,7 @@ let experimentsPromise: Promise<Experiments> | undefined;
  * The experiments are cached so that they are only fetched once.
  */
 export async function getExperiments(
-  server?: CodeAssistServer,
+  server?: ExperimentServer,
 ): Promise<Experiments> {
   if (experimentsPromise) {
     return experimentsPromise;

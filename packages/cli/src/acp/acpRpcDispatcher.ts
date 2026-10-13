@@ -44,12 +44,9 @@ export class GeminiAgent {
       this.sessionManager.setClientCapabilities(args.clientCapabilities);
     }
 
+    // Minimal harness: only env-key auth and custom gateways are offered.
+    // OAuth (LOGIN_WITH_GOOGLE) / ADC entries were removed.
     const authMethods = [
-      {
-        id: AuthType.LOGIN_WITH_GOOGLE,
-        name: 'Log in with Google',
-        description: 'Log in with your Google account',
-      },
       {
         id: AuthType.USE_GEMINI,
         name: 'Gemini API key',
@@ -68,7 +65,8 @@ export class GeminiAgent {
       {
         id: AuthType.GATEWAY,
         name: 'AI API Gateway',
-        description: 'Use a custom AI API Gateway',
+        description:
+          'Use a custom AI API Gateway (OWN_HARNESS_BASE_URL / OPENAI_BASE_URL)',
         _meta: {
           gateway: {
             protocol: 'google',

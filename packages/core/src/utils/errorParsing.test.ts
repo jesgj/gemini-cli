@@ -6,7 +6,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { parseAndFormatApiError } from './errorParsing.js';
-import { DEFAULT_GEMINI_FLASH_MODEL } from '../config/models.js';
+// Harness stubs for removed Gemini-specific model helpers (test-local, minimal churn).
+const DEFAULT_GEMINI_FLASH_MODEL = 'local-small-coder';
 import { AuthType } from '../core/contentGenerator.js';
 import type { StructuredError } from '../core/turn.js';
 

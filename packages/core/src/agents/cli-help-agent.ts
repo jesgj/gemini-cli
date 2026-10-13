@@ -5,7 +5,6 @@
  */
 
 import type { AgentDefinition } from './types.js';
-import { GEMINI_MODEL_ALIAS_FLASH } from '../config/models.js';
 import { z } from 'zod';
 import { GetInternalDocsTool } from '../tools/get-internal-docs.js';
 import type { AgentLoopContext } from '../config/agent-loop-context.js';
@@ -69,15 +68,12 @@ export const CliHelpAgent = (
   },
 
   modelConfig: {
-    model: GEMINI_MODEL_ALIAS_FLASH,
+    model: 'small',
     generateContentConfig: {
       temperature: 0.1,
       topP: 0.95,
-      thinkingConfig: {
-        includeThoughts: true,
-        thinkingBudget: -1,
-      },
-    },
+      reasoningEffort: 'low',
+    } as unknown as Record<string, unknown> as never,
   },
 
   runConfig: {

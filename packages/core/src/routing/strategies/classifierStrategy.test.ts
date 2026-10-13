@@ -14,16 +14,16 @@ import {
   isFunctionCall,
   isFunctionResponse,
 } from '../../utils/messageInspectors.js';
-import {
-  DEFAULT_GEMINI_FLASH_MODEL,
-  DEFAULT_GEMINI_MODEL,
-  DEFAULT_GEMINI_MODEL_AUTO,
-  PREVIEW_GEMINI_MODEL_AUTO,
-  PREVIEW_GEMINI_3_1_MODEL,
-  PREVIEW_GEMINI_3_1_CUSTOM_TOOLS_MODEL,
-  LATEST_GEMINI_FLASH_MODEL,
-  resetModelsForTesting,
-} from '../../config/models.js';
+import { DEFAULT_HARNESS_MODEL } from '../../config/models.js';
+// Harness stubs for removed Gemini-specific model helpers (test-local, minimal churn).
+const DEFAULT_GEMINI_FLASH_MODEL = 'local-small-coder';
+const DEFAULT_GEMINI_MODEL = DEFAULT_HARNESS_MODEL;
+const DEFAULT_GEMINI_MODEL_AUTO = 'auto';
+const PREVIEW_GEMINI_MODEL_AUTO = 'auto';
+const PREVIEW_GEMINI_3_1_MODEL = DEFAULT_HARNESS_MODEL;
+const PREVIEW_GEMINI_3_1_CUSTOM_TOOLS_MODEL = DEFAULT_HARNESS_MODEL;
+const LATEST_GEMINI_FLASH_MODEL = 'local-small-coder';
+function resetModelsForTesting(): void {}
 import { promptIdContext } from '../../utils/promptIdContext.js';
 import type { Content } from '@google/genai';
 import type { ResolvedModelConfig } from '../../services/modelConfigService.js';

@@ -15,7 +15,6 @@ import {
   SHELL_TOOL_NAME,
   WRITE_FILE_TOOL_NAME,
 } from '../tools/tool-names.js';
-import { PREVIEW_GEMINI_FLASH_MODEL } from '../config/models.js';
 
 describe('SkillExtractionAgent', () => {
   const skillsDir = '/tmp/skills';
@@ -34,7 +33,7 @@ describe('SkillExtractionAgent', () => {
     expect(agent.kind).toBe('local');
     expect(agent.name).toBe('confucius');
     expect(agent.displayName).toBe('Skill Extractor');
-    expect(agent.modelConfig.model).toBe(PREVIEW_GEMINI_FLASH_MODEL);
+    expect(agent.modelConfig.model).toBe('small');
     expect(agent.memoryInboxAccess).toBe(true);
     expect(agent.autoMemoryExtractionWriteAccess).toBe(true);
     expect(agent.includeExtensionContext).toBe(false);

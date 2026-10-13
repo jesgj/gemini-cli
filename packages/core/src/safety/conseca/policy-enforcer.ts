@@ -5,16 +5,29 @@
  */
 
 import type { Config } from '../../config/config.js';
-import type { FunctionCall } from '@google/genai';
 import { SafetyCheckDecision, type SafetyCheckResult } from '../protocol.js';
 import type { SecurityPolicy } from './types.js';
 import { getResponseText } from '../../utils/partUtils.js';
 import { safeTemplateReplace } from '../../utils/textUtils.js';
 
-import { DEFAULT_GEMINI_FLASH_MODEL } from '../../config/models.js';
 import { debugLogger } from '../../utils/debugLogger.js';
 
 import { LlmRole } from '../../telemetry/index.js';
+
+/** Minimal local tool-call shape; replaces `@google/genai` FunctionCall. */
+export interface ConsecaToolCall {
+  name?: string;
+  args?: unknown;
+}
+
+/** Own-harness model resolution: explicit param wins, else env, else default. */
+export function resolveHarnessModel(explicitModel?: string): string {
+  return (
+    explicitModel ||
+    process.env['OWN_HARNESS_MODEL'] ||
+    'local-coder'
+  );
+}
 
 const CONSECA_ENFORCEMENT_PROMPT = `
 You are a security enforcement engine. Your goal is to check if a specific tool call complies with a given security policy.
@@ -52,10 +65,11 @@ const EnforcementResultSchema = z.object({
  */
 export async function enforcePolicy(
   policy: SecurityPolicy,
-  toolCall: FunctionCall,
+  toolCall: ConsecaToolCall,
   config: Config,
+  model?: string,
 ): Promise<SafetyCheckResult> {
-  const model = DEFAULT_GEMINI_FLASH_MODEL;
+  const resolvedModel = resolveHarnessModel(model);
   const contentGenerator = config.getContentGenerator();
 
   if (!contentGenerator) {
@@ -88,7 +102,7 @@ export async function enforcePolicy(
   try {
     const result = await contentGenerator.generateContent(
       {
-        model,
+        model: resolvedModel,
         config: {
           responseMimeType: 'application/json',
           responseSchema: zodToJsonSchema(EnforcementResultSchema, {

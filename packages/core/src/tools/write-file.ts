@@ -55,12 +55,18 @@ import { WRITE_FILE_DEFINITION } from './definitions/coreTools.js';
 import { resolveToolDeclaration } from './definitions/resolver.js';
 import { detectOmissionPlaceholders } from './omissionPlaceholderDetector.js';
 import { resolveAndValidatePlanPath } from '../utils/planUtils.js';
-import {
-  isGemini3Model,
-  isGemini2Model,
-  isCustomModel,
-  resolveModel,
-} from '../config/models.js';
+import { resolveModel } from '../config/models.js';
+
+// Harness: no Gemini/custom tiers; aggressive unescape disabled.
+function isGemini3Model(..._args: unknown[]): boolean {
+  return false;
+}
+function isGemini2Model(..._args: unknown[]): boolean {
+  return false;
+}
+function isCustomModel(..._args: unknown[]): boolean {
+  return true;
+}
 import { discoverJitContext, appendJitContext } from './jit-context.js';
 import { isBuildFile } from '../utils/buildFileUtils.js';
 import { recordModifiedBuildFile } from '../utils/untrustedContextTracker.js';

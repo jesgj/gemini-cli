@@ -19,14 +19,16 @@ import type { Config } from '../config/config.js';
 import type { ModelAvailabilityService } from '../availability/modelAvailabilityService.js';
 import { createAvailabilityServiceMock } from '../availability/testUtils.js';
 import { AuthType } from '../core/contentGenerator.js';
-import {
-  DEFAULT_GEMINI_FLASH_MODEL,
-  DEFAULT_GEMINI_MODEL,
-  DEFAULT_GEMINI_MODEL_AUTO,
-  PREVIEW_GEMINI_FLASH_MODEL,
-  PREVIEW_GEMINI_MODEL,
-  PREVIEW_GEMINI_MODEL_AUTO,
-} from '../config/models.js';
+import { DEFAULT_HARNESS_MODEL } from '../config/models.js';
+import { HARNESS_SMALL_MODEL } from '../availability/policyCatalog.js';
+
+// Harness equivalents: keep old names as aliases for minimal test churn.
+const DEFAULT_GEMINI_MODEL = DEFAULT_HARNESS_MODEL;
+const DEFAULT_GEMINI_FLASH_MODEL = HARNESS_SMALL_MODEL;
+const DEFAULT_GEMINI_MODEL_AUTO = 'auto';
+const PREVIEW_GEMINI_FLASH_MODEL = HARNESS_SMALL_MODEL;
+const PREVIEW_GEMINI_MODEL = DEFAULT_HARNESS_MODEL;
+const PREVIEW_GEMINI_MODEL_AUTO = 'auto';
 import type { FallbackModelHandler } from './types.js';
 import { openBrowserSecurely } from '../utils/secure-browser-launcher.js';
 import { debugLogger } from '../utils/debugLogger.js';

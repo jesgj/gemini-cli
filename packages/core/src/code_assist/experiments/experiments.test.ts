@@ -5,12 +5,11 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { CodeAssistServer } from '../server.js';
+import type { ExperimentServer as CodeAssistServer } from './experiments.js';
 import { getClientMetadata } from './client_metadata.js';
 import type { ListExperimentsResponse, Flag } from './types.js';
 
 // Mock dependencies before importing the module under test
-vi.mock('../server.js');
 vi.mock('./client_metadata.js');
 
 describe('experiments', () => {

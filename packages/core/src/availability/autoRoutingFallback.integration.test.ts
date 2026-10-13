@@ -9,12 +9,12 @@ import { BaseLlmClient } from '../core/baseLlmClient.js';
 import { FakeContentGenerator } from '../core/fakeContentGenerator.js';
 import { Config } from '../config/config.js';
 import { RetryableQuotaError } from '../utils/googleQuotaErrors.js';
-import {
-  PREVIEW_GEMINI_MODEL,
-  PREVIEW_GEMINI_FLASH_MODEL,
-  PREVIEW_GEMINI_MODEL_AUTO,
-  resetModelsForTesting,
-} from '../config/models.js';
+import { DEFAULT_HARNESS_MODEL } from '../config/models.js';
+// Harness stubs for removed Gemini-specific model helpers (test-local, minimal churn).
+const PREVIEW_GEMINI_MODEL = DEFAULT_HARNESS_MODEL;
+const PREVIEW_GEMINI_FLASH_MODEL = 'local-small-coder';
+const PREVIEW_GEMINI_MODEL_AUTO = 'auto';
+function resetModelsForTesting(): void {}
 import fs from 'node:fs';
 import { AuthType } from '../core/contentGenerator.js';
 import type { FallbackIntent } from '../fallback/types.js';

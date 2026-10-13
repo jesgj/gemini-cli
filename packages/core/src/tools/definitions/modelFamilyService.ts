@@ -8,8 +8,15 @@
  * Single source of truth for mapping model IDs to tool families.
  */
 
-import { isGemini3Model } from '../../config/models.js';
 import { type ToolFamily } from './types.js';
+
+// Harness: no Gemini 3 family; string check keeps shape.
+function isGemini3Model(modelId?: string): boolean {
+  return (
+    typeof modelId === 'string' &&
+    (modelId.includes('gemini-3') || modelId.startsWith('gemini-3'))
+  );
+}
 
 /**
  * Resolves the ToolFamily for a given model ID.

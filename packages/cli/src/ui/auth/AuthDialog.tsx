@@ -5,7 +5,7 @@
  */
 
 import type React from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { Box, Text } from 'ink';
 import { theme } from '../semantic-colors.js';
 import { RadioButtonSelect } from '../components/shared/RadioButtonSelect.js';
@@ -16,14 +16,11 @@ import {
 } from '../../config/settings.js';
 import {
   AuthType,
-  clearCachedCredentialFile,
   type Config,
-  debugLogger,
 } from '@google/gemini-cli-core';
 import { useKeypress } from '../hooks/useKeypress.js';
 import { AuthState } from '../types.js';
 import { validateAuthMethodWithSettings } from './useAuth.js';
-import { relaunchApp } from '../../utils/processUtils.js';
 
 interface AuthDialogProps {
   config: Config;
@@ -35,37 +32,15 @@ interface AuthDialogProps {
 }
 
 export function AuthDialog({
-  config,
   settings,
   setAuthState,
   authError,
   onAuthError,
   setAuthContext,
 }: AuthDialogProps): React.JSX.Element {
-  const [exiting, setExiting] = useState(false);
+  // Minimal harness: only env-key auth is offered. OAuth (Sign in with
+  // Google), ADC / Cloud Shell entries were removed.
   let items = [
-    {
-      label: 'Sign in with Google',
-      value: AuthType.LOGIN_WITH_GOOGLE,
-      key: AuthType.LOGIN_WITH_GOOGLE,
-    },
-    ...(process.env['CLOUD_SHELL'] === 'true'
-      ? [
-          {
-            label: 'Use Cloud Shell user credentials',
-            value: AuthType.COMPUTE_ADC,
-            key: AuthType.COMPUTE_ADC,
-          },
-        ]
-      : process.env['GEMINI_CLI_USE_COMPUTE_ADC'] === 'true'
-        ? [
-            {
-              label: 'Use metadata server application default credentials',
-              value: AuthType.COMPUTE_ADC,
-              key: AuthType.COMPUTE_ADC,
-            },
-          ]
-        : []),
     {
       label: 'Use Gemini API Key',
       value: AuthType.USE_GEMINI,
@@ -108,7 +83,7 @@ export function AuthDialog({
       return item.value === AuthType.USE_GEMINI;
     }
 
-    return item.value === AuthType.LOGIN_WITH_GOOGLE;
+    return item.value === AuthType.USE_GEMINI;
   });
   if (settings.merged.security.auth.enforcedType) {
     initialAuthIndex = 0;
@@ -116,54 +91,10 @@ export function AuthDialog({
 
   const onSelect = useCallback(
     async (authType: AuthType | undefined, scope: LoadableSettingScope) => {
-      if (exiting) {
-        return;
-      }
       if (authType) {
-        const needsRestart =
-          authType === AuthType.LOGIN_WITH_GOOGLE ||
-          (authType === AuthType.USE_VERTEX_AI &&
-            process.env['CLOUD_SHELL'] === 'true');
-
-        if (needsRestart) {
-          setAuthContext({ requiresRestart: true });
-        } else {
-          setAuthContext({});
-        }
-
-        const currentAuthType = settings.merged.security?.auth?.selectedType;
-        if (
-          authType === AuthType.LOGIN_WITH_GOOGLE ||
-          currentAuthType === AuthType.LOGIN_WITH_GOOGLE
-        ) {
-          try {
-            await clearCachedCredentialFile();
-          } catch (error) {
-            debugLogger.error('Failed to clear cached credentials:', error);
-            onAuthError(
-              'Failed to clear cached credentials: ' +
-                (error instanceof Error ? error.message : String(error)),
-            );
-            if (authType === AuthType.LOGIN_WITH_GOOGLE) {
-              return;
-            }
-          }
-        }
+        setAuthContext({});
 
         settings.setValue(scope, 'security.auth.selectedType', authType);
-        if (
-          authType === AuthType.LOGIN_WITH_GOOGLE &&
-          config.isBrowserLaunchSuppressed()
-        ) {
-          setExiting(true);
-          setTimeout(() => {
-            void relaunchApp({ overrideAuthType: authType }).catch((err) => {
-              debugLogger.error('Failed to trigger supervisor relaunch:', err);
-              process.exit(1);
-            });
-          }, 100);
-          return;
-        }
 
         if (authType === AuthType.USE_GEMINI) {
           // Always show the API key input dialog so the user can
@@ -175,7 +106,7 @@ export function AuthDialog({
       }
       setAuthState(AuthState.Unauthenticated);
     },
-    [settings, config, setAuthState, exiting, setAuthContext, onAuthError],
+    [settings, setAuthState, setAuthContext],
   );
 
   const handleAuthSelect = async (authMethod: AuthType) => {
@@ -218,23 +149,6 @@ export function AuthDialog({
     },
     { isActive: true },
   );
-
-  if (exiting) {
-    return (
-      <Box
-        borderStyle="round"
-        borderColor={theme.ui.focus}
-        flexDirection="row"
-        padding={1}
-        width="100%"
-        alignItems="flex-start"
-      >
-        <Text color={theme.text.primary}>
-          Logging in with Google... Restarting Gemini CLI to continue.
-        </Text>
-      </Box>
-    );
-  }
 
   return (
     <Box

@@ -14,14 +14,14 @@ import {
 import { createDefaultPolicy, SILENT_ACTIONS } from './policyCatalog.js';
 import type { RetryAvailabilityContext } from './modelPolicy.js';
 import type { Config } from '../config/config.js';
-import {
-  DEFAULT_GEMINI_FLASH_LITE_MODEL,
-  BASE_GEMINI_FLASH_MODEL,
-  DEFAULT_GEMINI_MODEL_AUTO,
-  PREVIEW_GEMINI_3_1_CUSTOM_TOOLS_MODEL,
-  PREVIEW_GEMINI_3_1_MODEL,
-  resetModelsForTesting,
-} from '../config/models.js';
+import { DEFAULT_HARNESS_MODEL } from '../config/models.js';
+// Harness stubs for removed Gemini-specific model helpers (test-local, minimal churn).
+const DEFAULT_GEMINI_FLASH_LITE_MODEL = 'local-small-coder';
+const BASE_GEMINI_FLASH_MODEL = 'local-small-coder';
+const DEFAULT_GEMINI_MODEL_AUTO = 'auto';
+const PREVIEW_GEMINI_3_1_CUSTOM_TOOLS_MODEL = DEFAULT_HARNESS_MODEL;
+const PREVIEW_GEMINI_3_1_MODEL = DEFAULT_HARNESS_MODEL;
+function resetModelsForTesting(): void {}
 import { AuthType } from '../core/contentGenerator.js';
 import { ModelConfigService } from '../services/modelConfigService.js';
 import { DEFAULT_MODEL_CONFIGS } from '../config/defaultModelConfigs.js';

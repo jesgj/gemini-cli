@@ -21,7 +21,7 @@ import {
   applyAvailabilityTransition,
 } from '../availability/policyHelpers.js';
 
-export const UPGRADE_URL_PAGE = 'https://goo.gle/set-up-gemini-code-assist';
+export const UPGRADE_URL_PAGE = 'https://example.com/own-harness/upgrade';
 
 export async function handleFallback(
   config: Config,

@@ -32,7 +32,8 @@ import {
   type ServerGeminiStreamEvent,
 } from './turn.js';
 import { getCoreSystemPrompt } from './prompts.js';
-import { DEFAULT_GEMINI_MODEL_AUTO } from '../config/models.js';
+// Harness: auto tier replaces Gemini auto model.
+const DEFAULT_GEMINI_MODEL_AUTO = 'auto';
 import { FileDiscoveryService } from '../services/fileDiscoveryService.js';
 import { setSimulate429 } from '../utils/testUtils.js';
 import { tokenLimit } from './tokenLimits.js';
@@ -47,7 +48,6 @@ import type {
   ModelConfigKey,
   ResolvedModelConfig,
 } from '../services/modelConfigService.js';
-import { ClearcutLogger } from '../telemetry/clearcut-logger/clearcut-logger.js';
 import * as policyCatalog from '../availability/policyCatalog.js';
 import { LlmRole, LoopType } from '../telemetry/types.js';
 import { partToString } from '../utils/partUtils.js';
@@ -170,7 +170,6 @@ describe('Gemini Client (client.ts)', () => {
   let mockRouterService: { route: Mock };
   beforeEach(async () => {
     vi.resetAllMocks();
-    ClearcutLogger.clearInstance();
     vi.mocked(uiTelemetryService.setLastPromptTokenCount).mockClear();
 
     mockGenerateContentFn = vi.fn().mockResolvedValue({

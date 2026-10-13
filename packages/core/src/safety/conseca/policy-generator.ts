@@ -8,9 +8,17 @@ import type { Config } from '../../config/config.js';
 import type { SecurityPolicy } from './types.js';
 import { getResponseText } from '../../utils/partUtils.js';
 import { safeTemplateReplace } from '../../utils/textUtils.js';
-import { DEFAULT_GEMINI_FLASH_MODEL } from '../../config/models.js';
 import { debugLogger } from '../../utils/debugLogger.js';
 import { SafetyCheckDecision } from '../protocol.js';
+
+/** Own-harness model resolution: explicit param wins, else env, else default. */
+export function resolveHarnessModel(explicitModel?: string): string {
+  return (
+    explicitModel ||
+    process.env['OWN_HARNESS_MODEL'] ||
+    'local-coder'
+  );
+}
 
 import { LlmRole } from '../../telemetry/index.js';
 
@@ -101,8 +109,9 @@ export async function generatePolicy(
   userPrompt: string,
   trustedContent: string,
   config: Config,
+  model?: string,
 ): Promise<PolicyGenerationResult> {
-  const model = DEFAULT_GEMINI_FLASH_MODEL;
+  const resolvedModel = resolveHarnessModel(model);
   const contentGenerator = config.getContentGenerator();
 
   if (!contentGenerator) {
@@ -112,7 +121,7 @@ export async function generatePolicy(
   try {
     const result = await contentGenerator.generateContent(
       {
-        model,
+        model: resolvedModel,
         config: {
           responseMimeType: 'application/json',
           responseSchema: zodToJsonSchema(SecurityPolicyResponseSchema, {

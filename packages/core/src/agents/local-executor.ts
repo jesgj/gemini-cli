@@ -70,7 +70,6 @@ import {
 } from './types.js';
 import { getErrorMessage } from '../utils/errors.js';
 import { templateString } from './utils.js';
-import { DEFAULT_GEMINI_MODEL, isAutoModel } from '../config/models.js';
 import { tokenLimit } from '../core/tokenLimits.js';
 import { estimateTokenCountSync } from '../utils/tokenCalculation.js';
 import type { RoutingContext } from '../routing/routingStrategy.js';
@@ -105,6 +104,13 @@ import {
 export type ActivityCallback = (activity: SubagentActivityEvent) => void;
 
 const GRACE_PERIOD_MS = 60 * 1000; // 1 min
+
+// Harness fallback model (large tier) for subagent compression/routing.
+const HARNESS_FALLBACK_MODEL = 'large';
+
+function isAutoModel(model: string | undefined): boolean {
+  return model === 'auto';
+}
 
 /** The possible outcomes of a single agent turn. */
 type AgentTurnResult =
@@ -918,7 +924,7 @@ export class LocalAgentExecutor<TOutput extends z.ZodTypeAny> {
     prompt_id: string,
     abortSignal?: AbortSignal,
   ): Promise<void> {
-    const model = this.definition.modelConfig.model ?? DEFAULT_GEMINI_MODEL;
+    const model = this.definition.modelConfig.model ?? HARNESS_FALLBACK_MODEL;
     const threshold =
       (await this.context.config.getCompressionThreshold()) ??
       DEFAULT_COMPRESSION_TOKEN_THRESHOLD;
@@ -1027,7 +1033,7 @@ export class LocalAgentExecutor<TOutput extends z.ZodTypeAny> {
           modelToUse = decision.model;
         } catch (error) {
           debugLogger.warn(`Error during model routing: ${error}`);
-          modelToUse = DEFAULT_GEMINI_MODEL;
+          modelToUse = HARNESS_FALLBACK_MODEL;
         }
         // Cache the result regardless of whether it succeeded or fell back
         this.cache.set('modelToUse', modelToUse);

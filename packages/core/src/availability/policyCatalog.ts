@@ -10,15 +10,6 @@ import type {
   ModelPolicyChain,
   ModelPolicyStateMap,
 } from './modelPolicy.js';
-import {
-  DEFAULT_GEMINI_FLASH_LITE_MODEL,
-  DEFAULT_GEMINI_FLASH_MODEL,
-  DEFAULT_GEMINI_MODEL,
-  PREVIEW_GEMINI_FLASH_MODEL,
-  PREVIEW_GEMINI_MODEL,
-  resolveModel,
-} from '../config/models.js';
-import type { UserTierId } from '../code_assist/types.js';
 
 // actions and stateTransitions are optional when defining ModelPolicy
 type PolicyConfig = Omit<ModelPolicy, 'actions' | 'stateTransitions'> & {
@@ -29,7 +20,7 @@ type PolicyConfig = Omit<ModelPolicy, 'actions' | 'stateTransitions'> & {
 export interface ModelPolicyOptions {
   previewEnabled: boolean;
   isAutoSelection?: boolean;
-  userTier?: UserTierId;
+  userTier?: string;
   useGemini31?: boolean;
   useLatestFlashLite?: boolean;
   useGemini31FlashLite?: boolean;
@@ -37,6 +28,25 @@ export interface ModelPolicyOptions {
   useLatestFlash?: boolean;
   useGemini3_5Flash?: boolean;
 }
+
+/**
+ * Own-harness generic tiers. Explicit tier env wins, else OWN_HARNESS_MODEL,
+ * else local coder defaults. No Gemini / vendor defaults.
+ */
+export const HARNESS_SMALL_MODEL =
+  process.env['OWN_HARNESS_SMALL_MODEL'] ||
+  process.env['OWN_HARNESS_MODEL'] ||
+  'local-small-coder';
+
+export const HARNESS_MEDIUM_MODEL =
+  process.env['OWN_HARNESS_MEDIUM_MODEL'] ||
+  process.env['OWN_HARNESS_MODEL'] ||
+  'local-medium-coder';
+
+export const HARNESS_LARGE_MODEL =
+  process.env['OWN_HARNESS_LARGE_MODEL'] ||
+  process.env['OWN_HARNESS_MODEL'] ||
+  'local-large-coder';
 
 const DEFAULT_ACTIONS: ModelPolicyActionMap = {
   terminal: 'prompt',
@@ -70,48 +80,24 @@ const AUTO_ROUTING_OVERRIDES = {
 
 /**
  * Returns the default ordered model policy chain for the user.
+ * Generic tiers: large -> medium -> small (last resort).
  */
 export function getModelPolicyChain(
   options: ModelPolicyOptions,
 ): ModelPolicyChain {
   const isAuto = options.isAutoSelection ?? false;
 
-  if (options.previewEnabled) {
-    const proModel = resolveModel(
-      PREVIEW_GEMINI_MODEL,
-      options.useGemini31,
-      options.useCustomToolModel,
-      true,
-      undefined,
-      options.useLatestFlash,
-      options.useLatestFlashLite,
-    );
-    return [
-      definePolicy({
-        model: proModel,
-        ...(isAuto
-          ? {
-              maxAttempts: 3,
-              actions: { ...DEFAULT_ACTIONS, transient: 'silent' },
-              stateTransitions: { ...DEFAULT_STATE, transient: 'sticky_retry' },
-            }
-          : {}),
-      }),
-      definePolicy({
-        model: PREVIEW_GEMINI_FLASH_MODEL,
-        isLastResort: true,
-        maxAttempts: 10,
-      }),
-    ];
-  }
-
   return [
     definePolicy({
-      model: DEFAULT_GEMINI_MODEL,
+      model: HARNESS_LARGE_MODEL,
       ...(isAuto ? AUTO_ROUTING_OVERRIDES : {}),
     }),
     definePolicy({
-      model: DEFAULT_GEMINI_FLASH_MODEL,
+      model: HARNESS_MEDIUM_MODEL,
+      ...(isAuto ? AUTO_ROUTING_OVERRIDES : {}),
+    }),
+    definePolicy({
+      model: HARNESS_SMALL_MODEL,
       isLastResort: true,
       maxAttempts: 10,
     }),
@@ -125,15 +111,15 @@ export function createSingleModelChain(model: string): ModelPolicyChain {
 export function getFlashLitePolicyChain(): ModelPolicyChain {
   return [
     definePolicy({
-      model: DEFAULT_GEMINI_FLASH_LITE_MODEL,
+      model: HARNESS_SMALL_MODEL,
       actions: SILENT_ACTIONS,
     }),
     definePolicy({
-      model: DEFAULT_GEMINI_FLASH_MODEL,
+      model: HARNESS_MEDIUM_MODEL,
       actions: SILENT_ACTIONS,
     }),
     definePolicy({
-      model: DEFAULT_GEMINI_MODEL,
+      model: HARNESS_LARGE_MODEL,
       isLastResort: true,
       actions: SILENT_ACTIONS,
     }),

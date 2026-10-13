@@ -23,18 +23,22 @@ export { AgentChatHistory, type HistoryTurn } from './agentChatHistory.js';
 import { AgentChatHistory, type HistoryTurn } from './agentChatHistory.js';
 
 import { randomUUID } from 'node:crypto';
-import { toParts } from '../code_assist/converter.js';
+import { toParts } from './contentConverterShim.js';
 import {
   retryWithBackoff,
   isRetryableError,
   getRetryErrorType,
 } from '../utils/retry.js';
 import type { ValidationRequiredError } from '../utils/googleQuotaErrors.js';
-import {
-  resolveModel,
-  supportsModernFeatures,
-  isGemini2Model,
-} from '../config/models.js';
+import { resolveModel } from '../config/models.js';
+
+// Harness: all models use modern features; no Gemini 2 legacy path.
+function supportsModernFeatures(..._args: unknown[]): boolean {
+  return true;
+}
+function isGemini2Model(..._args: unknown[]): boolean {
+  return false;
+}
 import { hasCycleInSchema } from '../tools/tools.js';
 import type { StructuredError } from './turn.js';
 import type { CompletedToolCall } from '../scheduler/types.js';
